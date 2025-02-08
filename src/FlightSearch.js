@@ -7,21 +7,21 @@ const FlightSearch = () => {
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
-  const [flights, setFlights] = useState([]); 
-  const [isLoading, setIsLoading] = useState(false);  
+  const [flights, setFlights] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const usaCities = [
-    "New york", "Los Angeles", "Chicago", "Houston", "Phoenix", 
+    "New york", "Los Angeles", "Chicago", "Houston", "Phoenix",
     "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"
-  ]; 
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage("");  
-    setFlights([]);  
+    setErrorMessage("");
+    setFlights([]);
 
-    const today = new Date().toISOString().split("T")[0];  
+    const today = new Date().toISOString().split("T")[0];
     if (date < today) {
       setErrorMessage("The travel date has passed, please choose a future date.");
       return;
@@ -32,15 +32,16 @@ const FlightSearch = () => {
       return;
     }
 
-    if (!usaCities.includes(destination.toLowerCase())) {
-        setErrorMessage(`Destination city must be in the USA and from the list of allowed cities: ${usaCities.join(", ")}.`);
+    const lowerCaseDestination = destination.toLowerCase();
+    if (!usaCities.some(city => city.toLowerCase() === lowerCaseDestination)) {
+      setErrorMessage(`Destination city must be in the USA and from the list of allowed cities: ${usaCities.join(", ")}.`);
       return;
     }
 
-    setIsLoading(true);  
+    setIsLoading(true);
 
     try {
-      const destinationCityId = usaCities.indexOf(destination.toLowerCase()) + 1; 
+      const destinationCityId = usaCities.findIndex(city => city.toLowerCase() === lowerCaseDestination) + 1;
 
       const response = await axios.get("https://sky-scrapper.p.rapidapi.com/api/v1/flights/searchFlights", {
         headers: {
@@ -48,8 +49,8 @@ const FlightSearch = () => {
           "X-RapidAPI-Key": "e424896683msh18bdeb5fdabbdb1p10ac4fjsn4ea0b16b8f05",
         },
         params: {
-          originSkyId: "LOND", 
-          destinationSkyId: destinationCityId, 
+          originSkyId: "LOND",
+          destinationSkyId: destinationCityId,
           originEntityId: "27544008",
           destinationEntityId: "27537542",
           date: date,
@@ -68,12 +69,12 @@ const FlightSearch = () => {
       if (itineraries.length === 0) {
         setErrorMessage("No flights available for the selected origin or destination.");
       } else {
-        setFlights(itineraries);  
+        setFlights(itineraries);
       }
     } catch (error) {
       setErrorMessage("An error occurred while fetching flights. Please try again.");
     } finally {
-      setIsLoading(false);  
+      setIsLoading(false);
     }
   };
 
